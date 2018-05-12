@@ -27,7 +27,7 @@ We'll provide you with all the plumbing to implement the pipeline, while you wil
 1. Run `./push_validation_lambda.sh` to upload the pipline validation code to S3
 1. Create new stack in the CloudFormation service using `pipeline/pipeline-cft.json`. Fill out the parameters (bucket and email address), and click next.next...
 1. View your brand new pieline on AWS CodePipline page (it should fail as we didn't push our app yet)
-1. Test your pipeline by uploading your first 'app' `./push_app.sh exercises/level1/valid`
+1. Test your pipeline by uploading your first 'app' `./push_app.sh exercises/level1/valid` (it should pass because we haven't added any checks to Lambda)
 
 ### Test Instructions
 Once you have a working pipeline, start following the exercises in the `exercises` folder. <br/>
