@@ -5,7 +5,7 @@
     "S3Bucket1" : {
       "Type" : "AWS::S3::Bucket",
       "Properties" : {
-        "AccessControl" : "PublicRead",
+        "AccessControl" : "LogDeliveryWrite",
         "Tags": [
           {
             "Key": "Owner",
@@ -19,6 +19,22 @@
       }
     },
     "S3Bucket2" : {
+      "Type" : "AWS::S3::Bucket",
+      "Properties" : {
+        "AccessControl" : "PublicRead",
+        "Tags": [
+          {
+            "Key": "Owner",
+            "Value": "John@Smith.com"
+          },
+          {
+            "Key": "LOB",
+            "Value": "Finance"
+          }
+        ]
+      }
+    },
+    "S3Bucket3" : {
       "Type" : "AWS::S3::Bucket",
       "Properties" : {
         "Tags": [
@@ -36,12 +52,12 @@
     "S3BucketPolicy" : {
       "Type" : "AWS::S3::BucketPolicy",
       "Properties" : {
-        "Bucket" : {"Ref" : "S3Bucket2"},
+        "Bucket" : {"Ref" : "S3Bucket3"},
         "PolicyDocument": {
           "Statement":[{
           "Action":["s3:GetObject"],
           "Effect":"Allow",
-          "Resource": { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "S3Bucket2" } , "/*" ]]},
+          "Resource": { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "S3Bucket3" } , "/*" ]]},
           "Principal":"*"
           }]
         }
