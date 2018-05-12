@@ -1,0 +1,50 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "a sample test 'app' that creates a single SG with 1 SSH rule",
+  "Resources": {
+    "sg": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "SSH Security Group",
+        "SecurityGroupIngress": {
+          "CidrIp": "1.2.3.4/32",
+          "FromPort": 22,
+          "ToPort": 22,
+          "IpProtocol": "tcp"
+        },
+        "Tags": [
+          {
+            "Key": "LOB",
+            "Value": "Finance"
+          }
+        ]
+      }
+    },
+  "S3Bucket" : {
+    "Type" : "AWS::S3::Bucket",
+    "Properties" : {
+      "AccessControl" : "PublicRead",
+      "Tags": [
+        {
+          "Key": "LOB",
+          "Value": "Finance"
+        }
+      ]
+    }
+  },
+  "VPC" : {
+  "Type" : "AWS::EC2::VPC",
+  "Properties" : {
+    "EnableDnsSupport" : "true",
+    "EnableDnsHostnames" : "true",
+    "CidrBlock" : "10.1.0.0/16",
+    "Tags": [
+        {
+          "Key": "LOB",
+          "Value": "Finance"
+        }
+      ]
+  }
+ }
+}
+}
