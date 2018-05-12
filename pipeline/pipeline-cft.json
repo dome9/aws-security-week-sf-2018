@@ -2,16 +2,22 @@
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "DevSecOps pipeline sample using AWS code-pipeline and Lambda validation functions for CFT. Part of AWS Security Week SF MAY 2018. DevSecOps Lab by Dome9 Security - www.dome9.com",
   "Parameters": {
+    "S3Bucket": {
+      "Description": "The name of the S3 bucket that contains the source artifact, which must be in the same region as this stack",
+      "Type": "String",
+      "Default":"YOUR_BUCKET_NAME_HERE",
+    },
+    "Email": {
+      "Description": "The email address where CodePipeline sends pipeline notifications",
+      "Type": "String",
+      "Default":"YOUR_EMAIL_ADDRESS_HERE",
+    },
     "PipelineName": {
       "Default": "DevSecOpsPipline_myapp",
       "Description": "A name for pipeline",
       "Type": "String"
     },
-    "S3Bucket": {
-      "Description": "The name of the S3 bucket that contains the source artifact, which must be in the same region as this stack",
-      "Type": "String",
-      "Default":"sf-aws-security-week-2018"
-    },
+
     "SourceS3Key": {
       "Default": "artifacts/my-app-cft.zip",
       "Description": "The file name of the source artifact, such as myfolder/myartifact.zip",
@@ -36,10 +42,6 @@
     "ChangeSetName": {
       "Default": "UpdatePreview-myapp1",
       "Description": "A name for the production stack change set",
-      "Type": "String"
-    },
-    "Email": {
-      "Description": "The email address where CodePipeline sends pipeline notifications",
       "Type": "String"
     }
   },
