@@ -1,0 +1,464 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "DevSecOps pipeline sample using AWS code-pipeline and Lambda validation functions for CFT. Part of AWS Security Week SF MAY 2018. DevSecOps Lab by Dome9 Security - www.dome9.com",
+  "Parameters": {
+    "PipelineName": {
+      "Default": "DevSecOpsPipline_myapp",
+      "Description": "A name for pipeline",
+      "Type": "String"
+    },
+    "S3Bucket": {
+      "Description": "The name of the S3 bucket that contains the source artifact, which must be in the same region as this stack",
+      "Type": "String",
+      "Default":"sf-aws-security-week-2018"
+    },
+    "SourceS3Key": {
+      "Default": "artifacts/my-app-cft.zip",
+      "Description": "The file name of the source artifact, such as myfolder/myartifact.zip",
+      "Type": "String"
+    },
+    "LambdaS3Key": {
+      "Default": "pipeline/codepipeline-lambda.zip",
+      "Description": "The file name of the Lambda code artifact , such as myfolder/myartifact.zip",
+      "Type": "String"
+    },
+   
+    "TemplateFilePath": {
+      "Default": "myapp.json",
+      "Description": "The file path of the application CFT template",
+      "Type": "String"
+    },
+    "ProdStackName": {
+      "Default": "myappStack",
+      "Description": "A name for the production stack",
+      "Type": "String"
+    },
+    "ChangeSetName": {
+      "Default": "UpdatePreview-myapp1",
+      "Description": "A name for the production stack change set",
+      "Type": "String"
+    },
+    "Email": {
+      "Description": "The email address where CodePipeline sends pipeline notifications",
+      "Type": "String"
+    }
+  },
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": {
+            "default": "CodePipeline Settings"
+          },
+          "Parameters": [
+            "PipelineName",
+            "S3Bucket",
+            "SourceS3Key",
+            "Email",
+            "LambdaS3Key"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Artifacts settings"
+          },
+          "Parameters": [
+            "TemplateFilePath"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Production Stack Settings"
+          },
+          "Parameters": [
+            "ChangeSetName",
+            "ProdStackName",
+            "ProdStackConfig"
+          ]
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "ArtifactStoreBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        }
+      }
+    },
+    "CodePipelineSNSTopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "Subscription": [
+          {
+            "Endpoint": {
+              "Ref": "Email"
+            },
+            "Protocol": "email"
+          }
+        ],
+        "TopicName": {
+          "Ref": "PipelineName"
+        }
+      }
+    },
+    "CodePipelineLambdaRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Path": "/"
+      }
+    },
+    "LambdaCodePipelineExecutionPolicy": {
+      "DependsOn": [
+        "CodePipelineLambdaRole"
+      ],
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "LambdaRolePolicy",
+        "Roles": [
+          {
+            "Ref": "CodePipelineLambdaRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "logs:*"
+              ],
+              "Resource": [
+                "arn:aws:logs:*:*:*"
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "codepipeline:PutJobSuccessResult",
+                "codepipeline:PutJobFailureResult",
+                "s3:*",
+                "ec2:*",
+                "cloudformation:*"
+              ],
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:*"
+              ],
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "sns:*"
+              ],
+              "Resource": [
+                "*"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "CFTValidateLambda": {
+      "Type": "AWS::Lambda::Function",
+      "DependsOn": [
+        "CodePipelineLambdaRole",
+        "LambdaCodePipelineExecutionPolicy"
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "S3Bucket"
+          },
+          "S3Key": {
+            "Ref": "LambdaS3Key"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "CodePipelineLambdaRole",
+            "Arn"
+          ]
+        },
+        "Description": "Always return success",
+        "Timeout": 60,
+        "Handler": "cft_validate_lambda.lambda_handler",
+        "Runtime": "python2.7"
+      }
+    },
+    "CFNRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "cloudformation.amazonaws.com"
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "CloudFormationRole",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Action": [
+                    "ec2:*"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "PipelineRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "codepipeline.amazonaws.com"
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "CodePipelineAccess",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Action": [
+                    "s3:*",
+                    "cloudformation:CreateStack",
+                    "cloudformation:DescribeStacks",
+                    "cloudformation:DeleteStack",
+                    "cloudformation:UpdateStack",
+                    "cloudformation:CreateChangeSet",
+                    "cloudformation:ExecuteChangeSet",
+                    "cloudformation:DeleteChangeSet",
+                    "cloudformation:DescribeChangeSet",
+                    "cloudformation:SetStackPolicy",
+                    "iam:PassRole",
+                    "sns:Publish",
+                    "lambda:*"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "Pipeline": {
+      "Type": "AWS::CodePipeline::Pipeline",
+      "Properties": {
+        "ArtifactStore": {
+          "Location": {
+            "Ref": "ArtifactStoreBucket"
+          },
+          "Type": "S3"
+        },
+        "DisableInboundStageTransitions": [],
+        "Name": {
+          "Ref": "PipelineName"
+        },
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "PipelineRole",
+            "Arn"
+          ]
+        },
+        "Stages": [
+          {
+            "Name": "Commit",
+            "Actions": [
+              {
+                "InputArtifacts": [],
+                "Name": "TemplateSource",
+                "ActionTypeId": {
+                  "Category": "Source",
+                  "Owner": "AWS",
+                  "Provider": "S3",
+                  "Version": "1"
+                },
+                "Configuration": {
+                  "S3Bucket": {
+                    "Ref": "S3Bucket"
+                  },
+                  "S3ObjectKey": {
+                    "Ref": "SourceS3Key"
+                  }
+                },
+                "OutputArtifacts": [
+                  {
+                    "Name": "TemplateSource"
+                  }
+                ],
+                "RunOrder": "1"
+              }
+            ]
+          },
+          {
+            "Name": "StaticCodeAnalysis",
+            "Actions": [
+              {
+                "InputArtifacts": [
+                  {
+                    "Name": "TemplateSource"
+                  }
+                ],
+                "Name": "CFTValidation",
+                "ActionTypeId": {
+                  "Category": "Invoke",
+                  "Owner": "AWS",
+                  "Provider": "Lambda",
+                  "Version": "1"
+                },
+                "Configuration": {
+                  "FunctionName": {
+                    "Ref": "CFTValidateLambda"
+                  },
+                  "UserParameters": {
+                    "Fn::Sub": "{\"input\": \"TemplateSource\", \"file\": \"${TemplateFilePath}\",\"output\": \"${S3Bucket}\"}"
+                  }
+                },
+                "OutputArtifacts": [
+                  {
+                    "Name": "TemplateSource2"
+                  }
+                ],
+                "RunOrder": "1"
+              }
+            ]
+          },
+          
+          {
+            "Name": "ProductionDeployment",
+            "Actions": [
+              {
+                "InputArtifacts": [
+                  {
+                    "Name": "TemplateSource"
+                  }
+                ],
+                "Name": "CreateChangeSet",
+                "ActionTypeId": {
+                  "Category": "Deploy",
+                  "Owner": "AWS",
+                  "Provider": "CloudFormation",
+                  "Version": "1"
+                },
+                "OutputArtifacts": [],
+                "Configuration": {
+                  "ActionMode": "CHANGE_SET_REPLACE",
+                  "RoleArn": {
+                    "Fn::GetAtt": [
+                      "CFNRole",
+                      "Arn"
+                    ]
+                  },
+                  "StackName": {
+                    "Ref": "ProdStackName"
+                  },
+                  "ChangeSetName": {
+                    "Ref": "ChangeSetName"
+                  },
+                  "TemplatePath": {
+                    "Fn::Sub": "TemplateSource::${TemplateFilePath}"
+                  }
+                },
+                "RunOrder": "1"
+              },
+              {
+                "Name": "ExecuteChangeSet",
+                "ActionTypeId": {
+                  "Category": "Deploy",
+                  "Owner": "AWS",
+                  "Provider": "CloudFormation",
+                  "Version": "1"
+                },
+                "Configuration": {
+                  "ActionMode": "CHANGE_SET_EXECUTE",
+                  "RoleArn": {
+                    "Fn::GetAtt": [
+                      "CFNRole",
+                      "Arn"
+                    ]
+                  },
+                  "ChangeSetName": {
+                    "Ref": "ChangeSetName"
+                  },
+                  "StackName": {
+                    "Ref": "ProdStackName"
+                  }
+                },
+                "RunOrder": "2"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "LambdaFunction": {
+      "Description": "Lambda Function Name",
+      "Value": {
+        "Ref": "CFTValidateLambda"
+      }
+    }
+  }
+}
