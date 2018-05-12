@@ -11,6 +11,14 @@ Roy Feintuch - co-founder & CTO, Dome9 Security
 
 www.dome9.com
 ```
+### What is this lab all about?
+In this lab we'll be creating a DevSecOps pipeline in which users will commit their application/infrastructure CFT code into an S3 bucket, which will then be picked up by an AWS `CodePipeline` which will run a `Lambda` function to validate the CFT according to our business and security rules. If all is well, the pipeline will continue to depoy the CFT as a production stack.
+```
+Your CFT code -> S3 bucket -> Verification Lambda Function -> CloudFormation Deploy -> a deployed app / infrastructure
+                |----------------------- our CodePipeline ------------------------|
+```
+We'll provide you with all the pluming to implement the pipeline, while you will use your coding skills to implement a the logic inside the validation function Lambda that will decide if to continue the pipeline or stop it.
+
 
 ### Setup Instructions
 1. Clone this repo or download from github
