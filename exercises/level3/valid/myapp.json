@@ -1,0 +1,51 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "a sample test 'app' that creates a single SG with 1 SSH rule",
+  "Resources": {
+    "S3Bucket1" : {
+      "Type" : "AWS::S3::Bucket",
+      "Properties" : {
+        "AccessControl" : "LogDeliveryWrite",
+        "Tags": [
+          {
+            "Key": "Owner",
+            "Value": "John@Smith.com"
+          },
+          {
+            "Key": "LOB",
+            "Value": "Finance"
+          }
+        ]
+      }
+    },
+    "S3Bucket2" : {
+      "Type" : "AWS::S3::Bucket",
+      "Properties" : {
+        "Tags": [
+          {
+            "Key": "Owner",
+            "Value": "John@Smith.com"
+          },
+          {
+            "Key": "LOB",
+            "Value": "Finance"
+          }
+        ]
+      }
+    },
+    "S3BucketPolicy" : {
+      "Type" : "AWS::S3::BucketPolicy",
+      "Properties" : {
+        "Bucket" : {"Ref" : "S3Bucket2"},
+        "PolicyDocument": {
+          "Statement":[{
+          "Action":["s3:GetObject"],
+          "Effect":"Deny",
+          "Resource": { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "S3Bucket2" } , "/*" ]]},
+          "Principal":"*"
+          }]
+        }
+      }
+    }
+  }
+}
