@@ -1,0 +1,28 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "a sample test 'app' that creates a single SG with 1 SSH rule. This one with global SSH rule",
+  "Resources": {
+    "sg": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "SSH Security Group",
+        "SecurityGroupIngress": {
+          "CidrIp": "0.0.0.0/0",
+          "FromPort": 22,
+          "ToPort": 22,
+          "IpProtocol": "tcp"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "demo1"
+          },
+          {
+            "Key": "LOB",
+            "Value": "Finance"
+          }
+        ]
+      }
+    }
+  }
+}
