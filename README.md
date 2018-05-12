@@ -25,5 +25,10 @@ www.dome9.com
 Once you have a working pipeline, start following the exercises in the `exercises` folder
 For each level test a non-valid sample (which should fail) and a valid one which should pass.
 ```bash
+./push_app.sh exercises/level1/nonvalid
+# now look at your pipeline. If you implemented your Lambda corectly, the piepline should fail
+
 ./push_app.sh exercises/level1/valid
+# now review your pipeline which should succeed. The new stack should be deployed now
+
 ```
