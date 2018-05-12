@@ -1,4 +1,3 @@
-e
 ## Automating Security and Compliance Testing of Infrastructure-as-Code for DevSecOps
 
 ```
