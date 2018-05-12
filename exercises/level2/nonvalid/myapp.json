@@ -26,6 +26,10 @@
       "AccessControl" : "PublicRead",
       "Tags": [
         {
+            "Key": "Owner",
+            "Value": "John@Smith.com"
+          },
+        {
           "Key": "LOB",
           "Value": "Finance"
         }
