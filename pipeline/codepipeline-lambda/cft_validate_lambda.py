@@ -13,7 +13,7 @@ import zipfile
 import time
 
 # -----------------------------------------------------------------
-# SCROLL DOWN to implement your security logic (evaluate_template)
+# SCROLL TO THE BOTTOM to implement your security logic (evaluate_template)
 # -----------------------------------------------------------------
 
 print('Loading function')
