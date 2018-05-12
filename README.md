@@ -1,4 +1,4 @@
-
+e
 ## Automating Security and Compliance Testing of Infrastructure-as-Code for DevSecOps
 
 ```
@@ -17,7 +17,7 @@ In this lab we'll be creating a DevSecOps pipeline in which users will commit th
 Your CFT code -> S3 bucket -> Verification Lambda Function -> CloudFormation Deploy -> a deployed app / infrastructure
                 |----------------------- our CodePipeline ------------------------|
 ```
-We'll provide you with all the pluming to implement the pipeline, while you will use your coding skills to implement a the logic inside the validation function Lambda that will decide if to continue the pipeline or stop it.
+We'll provide you with all the plumbing to implement the pipeline, while you will use your coding skills to implement a the logic inside the validation function Lambda that will decide if to continue the pipeline or stop it.
 
 
 ### Setup Instructions
