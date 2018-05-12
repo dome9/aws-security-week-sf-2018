@@ -22,7 +22,11 @@ www.dome9.com
 1. Test your pipeline by uploading your first 'app' `./push_app.sh exercises/level1/valid`
 
 ### Test Instructions
-Once you have a working pipeline, start following the exercises in the `exercises` folder
+Once you have a working pipeline, start following the exercises in the `exercises` folder. <br/>
+
+You can implement your validation logic directly within the AWS Lambda console. Your Lambda name should be something like: <stackname>-CFTValidateLambda-<random> and search for the `evaluate_template` function. <br/>
+In a real situation we would have working on these Lambda functions locally, and committing them to a source control system, but in this case we can quickly hack something in the AWS Lambda editor.<br/>
+
 For each level test a non-valid sample (which should fail) and a valid one which should pass.
 ```bash
 ./push_app.sh exercises/level1/nonvalid
