@@ -1,0 +1,64 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Mappings": {
+        "PortsMap": {
+            "app1": { "port" : 80},
+            "app2": { "port" : 443},
+            "bastion": { "port" : 22},
+        }
+    },
+    "Resources":{
+        "sg": {
+          "Type": "AWS::EC2::SecurityGroup",
+          "Properties": {
+            "GroupDescription": "SSH Security Group",
+            "SecurityGroupIngress": {
+              "CidrIp": "1.2.3.4/32",
+              "FromPort": 22,
+              "ToPort": 22,
+              "IpProtocol": "tcp"
+            },
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "demo1"
+              },
+              {
+                "Key": "LOB",
+                "Value": "Finance"
+              }
+            ]
+          }
+        },
+        "sg2": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "New SG for testing",
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": {"Fn::FindInMap": ["PortsMap", "app1", "port" ]},
+                        "ToPort": {"Fn::FindInMap": ["PortsMap", "app1", "port" ]},
+                        "IpProtocol": "tcp"
+                    }
+                ]
+            }
+        },
+        "sg3": {
+          "Type": "AWS::EC2::SecurityGroup",
+          "Properties": {
+            "GroupDescription": "SSH Security Group"
+          }
+        },
+        "sgrules": {
+          "Type": "AWS::EC2::SecurityGroupIngress",
+          "Properties": {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": 443,
+            "ToPort": 443,
+            "IpProtocol": "tcp",
+            "GroupId": { "Fn::GetAtt": [ "sg3", "GroupId"]}
+          }
+        }
+    }
+}
