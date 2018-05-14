@@ -1,8 +1,4 @@
-from __future__ import print_function
-from boto3.session import Session
-
 import json
-import urllib
 import boto3
 import botocore
 import re
