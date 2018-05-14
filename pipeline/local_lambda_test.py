@@ -45,9 +45,6 @@ def evaluate_template(template):
     passed = True
     failed_rules = []
     jsonTemplate = json.loads(template)
-    #for i in jsonTemplate['Resources']:
-    #    print(jsonTemplate['Resources'][i])
-
     """Main CFT Validation function
 
     This is where you'll implement all your security, compliance and governance logic to validate the CFT.
